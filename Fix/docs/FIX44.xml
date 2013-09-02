@@ -768,6 +768,7 @@
 			<value enum='1' description='MARKET' />
 			<value enum='2' description='LIMIT' />
 			<value enum='3' description='STOP' />
+			<value enum='X' description='OCO' />
 		</field>
 		<field number='41' name='OrigClOrdID' type='STRING' />
 		<field number='42' name='OrigTime' type='UTCTIMESTAMP' />
@@ -3520,6 +3521,7 @@
 		<field number='5149' name='Memo' type='STRING' />
 		<field number='5497' name='DaysToSettlement' type='STRING' />
 		<field number='5706' name='FixedRate' type='PERCENTAGE' />
+		<field number='6001' name='GainPrice' type='PRICE' />
 		<field number='6032' name='UniqueTradeID' type='STRING' />
 		<field number='35001' name='ProtectionPrice' type='PRICE' />
 		<field number='10029' name='BTSFinalTxOrdStatus' type='CHAR'>
