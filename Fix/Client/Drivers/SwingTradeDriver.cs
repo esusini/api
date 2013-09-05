@@ -38,10 +38,8 @@
 			initiator.Start();
 		}
 
-		public void SendNewOrderSingle(string symbol, int quantity, decimal price, decimal? stop, int account, SessionID session)
+		public void SendNewOrderSingle(string symbol, int quantity, decimal? price, decimal? stop, decimal? gain, int account, SessionID session)
 		{
-			//stop = null;
-
 			clOrdId = DateTime.Now.Ticks.ToString();
 			lastSymbol = symbol;
 			lastAccount = account;
@@ -50,12 +48,10 @@
 			                                        new Symbol(symbol),
 			                                        new Side(Side.BUY),
 			                                        new TransactTime(DateTime.Now),
-													//new OrdType(OrdType.MARKET))
-			                                        new OrdType(stop.HasValue ? OrdType.STOP : OrdType.LIMIT))
+			                                        new OrdType(gain.HasValue ? 'X' : stop.HasValue ? OrdType.STOP : price.HasValue ? OrdType.LIMIT : OrdType.MARKET))
 				{
 					Account = new Account(account.ToString()),
 					OrderQty = new OrderQty(quantity),
-					Price = new Price(price),
 					TargetStrategy = new TargetStrategy(TargetStrategy),
 					TimeInForce = new TimeInForce(TIF),
 				};
@@ -65,6 +61,12 @@
 
 			if (stop.HasValue)
 				newOrderSingle.StopPx = new StopPx(stop.Value);
+
+			if (price.HasValue)
+				newOrderSingle.Price = new Price(price.Value);
+
+			if (gain.HasValue)
+				newOrderSingle.SetField(new DecimalField(6001, gain.Value));
 
 			Session.SendToTarget(newOrderSingle, session);
 		}
@@ -86,7 +88,7 @@
 			Session.SendToTarget(cancel, session);
 		}
 
-		public void SendOrderReplaceCancelRequest(string symbol, int quantity, decimal price, decimal? stop, int account, SessionID session)
+		public void SendOrderReplaceCancelRequest(string symbol, int quantity, decimal? price, decimal? stop, decimal? gain, int account, SessionID session)
 		{
 			origClOrdID = clOrdId;
 			clOrdId = DateTime.Now.Ticks.ToString();
@@ -96,22 +98,27 @@
 			                                            new Symbol(lastSymbol),
 			                                            new Side(Side.BUY),
 			                                            new TransactTime(DateTime.Now),
-														new OrdType(stop.HasValue ? OrdType.STOP : OrdType.LIMIT))
+														new OrdType(gain.HasValue ? 'X' : stop.HasValue ? OrdType.STOP : price.HasValue ? OrdType.LIMIT : OrdType.MARKET))
 				{
 					Account = new Account(lastAccount.ToString()),
 					OrderQty = new OrderQty(quantity),
-					Price = new Price(price)
 				};
 
 			if (stop.HasValue)
 				replace.StopPx = new StopPx(stop.Value);
+
+			if (price.HasValue)
+				replace.Price = new Price(price.Value);
+
+			if (gain.HasValue)
+				replace.SetField(new DecimalField(6001, gain.Value));
 
 			Session.SendToTarget(replace, session);
 		}
 
 		public void Disconnect()
 		{
-			initiator.Stop();
+			initiator.Stop(true);
 		}
 
 		public IEnumerable GetSessions()

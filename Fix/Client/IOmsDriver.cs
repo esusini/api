@@ -6,12 +6,12 @@
 	public interface IOmsDriver
 	{
 		void Connect(IApplication application);
-		
-		void SendNewOrderSingle(string symbol, int quantity, decimal price, decimal? stop, int account, SessionID session);
+
+		void SendNewOrderSingle(string symbol, int quantity, decimal? price, decimal? stop, decimal? gain, int account, SessionID session);
 		
 		void SendOrderCancelRequest(SessionID session);
 
-		void SendOrderReplaceCancelRequest(string symbol, int quantity, decimal price, decimal? stop, int account, SessionID session);
+		void SendOrderReplaceCancelRequest(string symbol, int quantity, decimal? price, decimal? stop, decimal? gain, int account, SessionID session);
 		
 		void Disconnect();
 		

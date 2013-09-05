@@ -1,9 +1,11 @@
 ﻿namespace Client
 {
 	using System;
+	using System.Collections.Generic;
 	using System.Linq;
 	using System.Windows;
 	using System.ComponentModel;
+	using System.Windows.Controls;
 	using QuickFix;
 	using Message = QuickFix.Message;
 
@@ -12,28 +14,25 @@
 	/// </summary>
 	public partial class MainWindow : Window, IApplication
 	{
-		private readonly IOmsDriver driver;
+		private readonly Dictionary<string, IOmsDriver> drivers = new Dictionary<string, IOmsDriver>();
+
+		private IOmsDriver currentDriver;
 
 		public MainWindow()
 		{
 			InitializeComponent();
 
-			//driver = new SwingTradeDriver();
-			driver = new DayTradeDriver();
+			drivers.Add("SwingTrade", new SwingTradeDriver());
+			drivers.Add("DayTrade", new DayTradeDriver());
 
-			driver.Connect(this);
-
-			foreach (var sessionId in driver.GetSessions())
-				sessionsCombo.Items.Add(sessionId);
-
-			sessionsCombo.SelectedItem = sessionsCombo.Items.Cast<SessionID>().First();
+			SetDriver(strategyCombo.SelectedItem);
 		}
 
 		protected override void OnClosing(CancelEventArgs e)
 		{
 			base.OnClosing(e);
 
-			driver.Disconnect();
+			currentDriver.Disconnect();
 		}
 
 		private short Account
@@ -46,9 +45,14 @@
 			get { return string.IsNullOrEmpty(stopField.Text) ? (decimal?) null : Convert.ToDecimal(stopField.Text); }
 		}
 
-		private decimal Price
+		private decimal? Price
 		{
-			get { return Convert.ToDecimal(priceField.Text); }
+			get { return string.IsNullOrEmpty(priceField.Text) ? (decimal?) null : Convert.ToDecimal(priceField.Text); }
+		}
+
+		private decimal? Gain
+		{
+			get { return string.IsNullOrEmpty(gainField.Text) ? (decimal?) null : Convert.ToDecimal(gainField.Text); }
 		}
 
 		private int Quantity
@@ -58,21 +62,21 @@
 
 		private void SendNewOrderBtn_Click(object sender, RoutedEventArgs e)
 		{
-			Action disp = () => driver.SendNewOrderSingle(symbolField.Text, Quantity, Price, Stop, Account, (SessionID) sessionsCombo.SelectedItem);
+			Action disp = () => currentDriver.SendNewOrderSingle(symbolField.Text, Quantity, Price, Stop, Gain, Account, (SessionID) sessionsCombo.SelectedItem);
 
 			Dispatcher.BeginInvoke(disp);
 		}
 
 		private void OrderCancelBtn_Click(object sender, RoutedEventArgs e)
 		{
-			Action disp = () => driver.SendOrderCancelRequest((SessionID) sessionsCombo.SelectedItem);
+			Action disp = () => currentDriver.SendOrderCancelRequest((SessionID) sessionsCombo.SelectedItem);
 
 			Dispatcher.BeginInvoke(disp);
 		}
 
 		private void SendReplaceBtn_Click(object sender, RoutedEventArgs e)
 		{
-			Action disp = () => driver.SendOrderReplaceCancelRequest(symbolField.Text, Quantity, Price, Stop, Account, (SessionID) sessionsCombo.SelectedItem);
+			Action disp = () => currentDriver.SendOrderReplaceCancelRequest(symbolField.Text, Quantity, Price, Stop, Gain, Account, (SessionID) sessionsCombo.SelectedItem);
 
 			Dispatcher.BeginInvoke(disp);
 		}
@@ -134,6 +138,32 @@
 				};
 
 			Dispatcher.BeginInvoke(writer);
+		}
+
+		private void strategyCombo_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+		{
+			SetDriver(e.AddedItems[0]);
+		}
+
+		private void SetDriver(object selectedItem)
+		{
+			var item = selectedItem as ComboBoxItem;
+
+			if (item == null || item.Content == null) return;
+
+			if (currentDriver != null)
+				currentDriver.Disconnect();
+
+			currentDriver = drivers[item.Content.ToString()];
+
+			currentDriver.Connect(this);
+
+			sessionsCombo.Items.Clear();
+
+			foreach (var sessionId in currentDriver.GetSessions())
+				sessionsCombo.Items.Add(sessionId);
+
+			sessionsCombo.SelectedItem = sessionsCombo.Items.Cast<SessionID>().First();
 		}
 	}
 }
