@@ -24,7 +24,7 @@
 		private string clOrdId;
 		private string origClOrdID;
 		private string lastSymbol;
-		private int lastAccount;
+		private string lastAccount;
 
 		public void Connect(IApplication application)
 		{
@@ -38,7 +38,7 @@
 			initiator.Start();
 		}
 
-		public void SendNewOrderSingle(string symbol, int quantity, decimal? price, decimal? stop, decimal? gain, int account, SessionID session)
+		public void SendNewOrderSingle(string symbol, int quantity, decimal? price, decimal? stop, decimal? gain, string account, SessionID session)
 		{
 			clOrdId = DateTime.Now.Ticks.ToString();
 			lastSymbol = symbol;
@@ -50,7 +50,7 @@
 			                                        new TransactTime(DateTime.Now),
 			                                        new OrdType(gain.HasValue ? 'X' : stop.HasValue ? OrdType.STOP : price.HasValue ? OrdType.LIMIT : OrdType.MARKET))
 				{
-					Account = new Account(account.ToString()),
+					Account = new Account(account),
 					OrderQty = new OrderQty(quantity),
 					TargetStrategy = new TargetStrategy(TargetStrategy),
 					TimeInForce = new TimeInForce(TIF),
@@ -88,7 +88,7 @@
 			Session.SendToTarget(cancel, session);
 		}
 
-		public void SendOrderReplaceCancelRequest(string symbol, int quantity, decimal? price, decimal? stop, decimal? gain, int account, SessionID session)
+		public void SendOrderReplaceCancelRequest(string symbol, int quantity, decimal? price, decimal? stop, decimal? gain, string account, SessionID session)
 		{
 			origClOrdID = clOrdId;
 			clOrdId = DateTime.Now.Ticks.ToString();

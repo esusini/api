@@ -6,7 +6,9 @@
 	using System.Windows;
 	using System.ComponentModel;
 	using System.Windows.Controls;
+	using System.Windows.Threading;
 	using QuickFix;
+	using QuickFix.Fields;
 	using Message = QuickFix.Message;
 
 	/// <summary>
@@ -35,9 +37,9 @@
 			currentDriver.Disconnect();
 		}
 
-		private short Account
+		private string Account
 		{
-			get { return Convert.ToInt16(accountField.Text); }
+			get { return accountField.Text; }
 		}
 
 		private decimal? Stop
@@ -83,6 +85,9 @@
 
 		public void ToAdmin(Message message, SessionID sessionID)
 		{
+			if (message is QuickFix.FIX44.Logon)
+				Dispatcher.Invoke(() => message.SetField(new Username(accountField.Text.Replace("DT-", "").Replace("ST-", ""))), DispatcherPriority.Send);
+
 			Trace(message);
 		}
 
