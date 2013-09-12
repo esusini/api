@@ -110,6 +110,7 @@
 			<field name='TransactTime' required='N' />
 			<field name='Text' required='N' />
 			<field name='ExecRestatementReason' required='N' />
+			<field name='TotNumReports' required='N' />
 		</message>
 		<message name='OrderCancelReject' msgcat='app' msgtype='9'>
 			<field name='OrderID' required='Y' />
@@ -195,6 +196,7 @@
 			<field name='PriorSettlPrice' required='Y' />
 			<component name='PositionQty' required='Y' />
 			<field name='Symbol' required='Y' />
+			<field name='TotalNumPosReports' required='N' />
 		</message>
 		<message name='UserResponse' msgcat='app' msgtype='BF'>
 			<field name='UserRequestID' required='Y' />
