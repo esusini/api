@@ -718,6 +718,7 @@
 			<value enum='1' description='MARKET' />
 			<value enum='2' description='LIMIT' />
 			<value enum='3' description='STOP' />
+			<value enum='4' description='STOP_LIMIT' />
 			<value enum='X' description='OCO' />
 		</field>
 		<field number='41' name='OrigClOrdID' type='STRING' />
